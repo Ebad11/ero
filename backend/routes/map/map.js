@@ -3,7 +3,7 @@ const router = express.Router();
 
 router.get('/api/getMap', async (req, res) => {
   
-    res.json({greet:"Hello"})
+    res.json({greet:"Hello Worlds"})
   });
   
 
