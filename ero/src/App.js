@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import locIcon from "./locIcon.png"
 import Navbar from './Navbar';
 
+
 function App() {
+
   const [userLocation, setUserLocation] = useState(null);
+  const [navState, setNavState] = useState("Charging Points near you");
   const [loading, setLoading] = useState(true);
   const [chargingPoints, setChargingPoints] = useState([]);
+  const [fromLocation, setFromLocation] = useState({latitude:"", longitude:""});
+  const [toLocation, setToLocation] = useState({latitude:"", longitude:""});
+  const [routes, setRoutes] = useState(null);
 
   // Custom icon for charging points
   const chargingIcon = new L.Icon({
@@ -68,8 +74,8 @@ function App() {
 
   return (
     <>
-    <Navbar/>
-    <div style={{ height: "100vh" }}>
+    <Navbar routes={routes} setRoutes={setRoutes} fromLocation={fromLocation} setFromLocation={setFromLocation} setToLocation={setToLocation}  toLocation={toLocation}/>
+    <div style={{ height: "100vh", postion:"relative" }} >
       {loading ? (
         <div>Loading the closest Charging Points...</div>
       ) : (
@@ -89,6 +95,12 @@ function App() {
               <Popup>{point.AddressInfo.Title}</Popup>
             </Marker>
           ))}
+
+          {routes && 
+             routes.map((route, index) => (
+                        <Polyline key={index} positions={route} color="blue" />
+                      ))
+          }
         </MapContainer>
       )}
     </div>
@@ -97,3 +109,51 @@ function App() {
 }
 
 export default App;
+// src/App.js
+// import React, { useState } from 'react';
+// import { MapContainer, TileLayer, Polyline } from 'react-leaflet';
+
+// const App = () => {
+//   const fromCoordinates = { latitude: 40.7128, longitude: -74.0060 }; // Example: New York City
+// const toCoordinates = { latitude: 34.0522, longitude: -118.2437 }; // Example: Los Angeles
+//   const [from, setFrom] = useState('');
+//   const [to, setTo] = useState('');
+//   const [routes, setRoutes] = useState([]);
+//   const [error, setError] = useState(null);
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//       const response = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${"5b3ce3597851110001cf6248031841f2ead843b0a583d3e3042ddfdb"}&start=${fromCoordinates.longitude.toString()},${fromCoordinates.latitude.toString()}&end=${toCoordinates.longitude.toString()},${toCoordinates.latitude.toString()}`);
+//       if (!response.ok) {
+//         throw new Error('Failed to fetch routes');
+//       }
+//       const data = await response.json();
+//       const coordinates = data.features[0].geometry.coordinates;
+//       const routeCoordinates = coordinates.map(coord => [coord[1], coord[0]]);
+//       setRoutes([routeCoordinates]);
+//     } catch (error) {
+//       console.error('Error fetching routes:', error);
+//       setError('Error fetching routes. Please try again later.');
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <form onSubmit={handleSubmit}>
+//         <input type="text" placeholder="From" value={from} onChange={(e) => setFrom(e.target.value)} />
+//         <input type="text" placeholder="To" value={to} onChange={(e) => setTo(e.target.value)} />
+//         <button type="submit">Get Routes</button>
+//       </form>
+//       {error && <p>{error}</p>}
+//       <MapContainer center={[51.505, -0.09]} zoom={1} style={{ height: '100%', width: '100%' }}>
+//         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+//         {routes.map((route, index) => (
+//           <Polyline key={index} positions={route} color="blue" />
+//         ))}
+//       </MapContainer>
+//     </div>
+//   );
+// };
+
+// export default App;
