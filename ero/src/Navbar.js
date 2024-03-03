@@ -21,18 +21,17 @@ function handletoLongitudeChange(e)
     props.setToLocation({longitude:e.target.value});
 }
 
-async function handleSubmit()
+async function handleSubmit(e)
 {
-    alert("JHelf")
-          
+          e.preventDefault();
             try {
-              const response = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${"5b3ce3597851110001cf6248031841f2ead843b0a583d3e3042ddfdb"}&start=${props.fromLocation.longitude.toString()},${props.toLocation.latitude.toString()}&end=${props.toLocation.longitude.toString()},${props.toLocation.latitude.toString()}`);
+              const response = await fetch(`https://api.tomtom.com/routing/1/calculateRoute/28.7041,77.1025:19.0760,72.8777/json?key=MmKs0xeYFeez2yUfBhJB2aQoMjSFGocj`);
               if (!response.ok) {
                 throw new Error('Failed to fetch routes');
               }
               const data = await response.json();
-              const coordinates = data.features[0].geometry.coordinates;
-              const routeCoordinates = coordinates.map(coord => [coord[1], coord[0]]);
+              const coordinates = data.routes[0].legs[0].points;
+              const routeCoordinates = coordinates.map(point => [point.latitude, point.longitude]);
               props.setRoutes([routeCoordinates]);
               alert(props.routes)
             } catch (error) {
