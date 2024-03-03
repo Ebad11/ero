@@ -1,5 +1,5 @@
 import React from 'react';
-
+import logo from './logo.jpeg'
 // Calculate the distance between two points on the map
 function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // Radius of the earth in km
@@ -38,53 +38,50 @@ function filterPointsAlongRoute(coordinates) {
 }
 
 function Navbar(props) {
-    function handleFromLatitudeChange(e) {
-        props.setFromLocation(prevState => ({
-            ...prevState,
-            latitude: e.target.value
-        }));
+    function handleFromLocationChange(e) {
+        props.setFromLocation(e.target.value);
     }
 
-    function handleFromLongitudeChange(e) {
-        props.setFromLocation(prevState => ({
-            ...prevState,
-            longitude: e.target.value
-        }));
-    }
-
-    function handleToLatitudeChange(e) {
-        props.setToLocation(prevState => ({
-            ...prevState,
-            latitude: e.target.value
-        }));
-    }
-
-    function handleToLongitudeChange(e) {
-        props.setToLocation(prevState => ({
-            ...prevState,
-            longitude: e.target.value
-        }));
+    function handleToLocationChange(e) {
+        props.setToLocation(e.target.value);
     }
 
     async function handleSubmit(e) {
         e.preventDefault();
         try {
+            // Perform geocoding for the starting location
+            const fromResponse = await fetch(`https://nominatim.openstreetmap.org/search?q=${props.fromLocation}&format=json&limit=1`);
+            if (!fromResponse.ok) {
+                throw new Error('Failed to geocode starting location');
+            }
+            const fromData = await fromResponse.json();
+            const fromCoordinates = [fromData[0].lat, fromData[0].lon];
+
+            // Perform geocoding for the ending location
+            const toResponse = await fetch(`https://nominatim.openstreetmap.org/search?q=${props.toLocation}&format=json&limit=1`);
+            if (!toResponse.ok) {
+                throw new Error('Failed to geocode ending location');
+            }
+            const toData = await toResponse.json();
+            const toCoordinates = [toData[0].lat, toData[0].lon];
+
             // Fetch route coordinates
-            const response = await fetch(`https://api.tomtom.com/routing/1/calculateRoute/${props.fromLocation.latitude},${props.fromLocation.longitude}:${props.toLocation.latitude},${props.toLocation.longitude}/json?key=MmKs0xeYFeez2yUfBhJB2aQoMjSFGocj`);
+            const response = await fetch(`https://api.tomtom.com/routing/1/calculateRoute/${fromCoordinates[0]},${fromCoordinates[1]}:${toCoordinates[0]},${toCoordinates[1]}/json?key=MmKs0xeYFeez2yUfBhJB2aQoMjSFGocj`);
             if (!response.ok) {
                 throw new Error('Failed to fetch routes');
             }
             const data = await response.json();
             const coordinates = data.routes[0].legs[0].points;
             const routeCoordinates = coordinates.map(point => [point.latitude, point.longitude]);
-           props.setRoutes([routeCoordinates])
+            props.setRoutes([routeCoordinates])
+
             // Filter points along the route
             const filteredRouteCoordinates = filterPointsAlongRoute(routeCoordinates);
 
             // Fetch charging points for filtered points along the route
             const chargingPointsPromises = filteredRouteCoordinates.map(async point => {
                 const [latitude, longitude] = point;
-                const response = await fetch(`https://api.openchargemap.io/v3/poi/?output=json&latitude=${latitude}&longitude=${longitude}&maxresults=1&key=074ec762-7efe-439c-8d4f-aa7beefeebe7`);
+                const response = await fetch(`https://api.openchargemap.io/v3/poi/?output=json&latitude=${latitude}&longitude=${longitude}&maxresults=10&key=074ec762-7efe-439c-8d4f-aa7beefeebe7`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch charging points');
                 }
@@ -110,17 +107,15 @@ function Navbar(props) {
         <>
             <nav className="navbar navbar-expand-lg ">
                 <div className="container-fluid">
-                    <a className="navbar-brand" href="#">ZapZone</a>
+                    <a className="navbar-brand" href="#"> <img src={logo} width={"50px"} alt="" /> <b style={{"fontSize":"24px", }} id='log_name'>ZapZone</b></a>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                         <span className="navbar-toggler-icon"></span>
                     </button>
                   
-                    <form className="d-flex" role="search">
-                        <input className="form-control me-2" id='fromLatitude' onChange={handleFromLatitudeChange} value={props.fromLocation.latitude} type="search" placeholder="From Latitude" aria-label="Search" />
-                        <input className="form-control me-2" id='fromLongitude' onChange={handleFromLongitudeChange} value={props.fromLocation.longitude} type="search" placeholder="From Longitude" aria-label="Search" />
-                        <input className="form-control me-2" id='toInput' onChange={handleToLatitudeChange} value={props.toLocation.latitude} type="search" placeholder="To Latitude" aria-label="Search" />
-                        <input className="form-control me-2" id='toInput' onChange={handleToLongitudeChange} value={props.toLocation.longitude} type="search" placeholder="To Longitude" aria-label="Search" />
-                        <button className="btn btn-outline-success" onClick={handleSubmit}>Search</button>
+                    <form className="d-flex" role="search" onSubmit={handleSubmit}>
+                        <input className="form-control me-2" id='fromLocation' onChange={handleFromLocationChange} value={props.fromLocation} type="search" placeholder="From Location" aria-label="Search" />
+                        <input className="form-control me-2" id='toLocation' onChange={handleToLocationChange} value={props.toLocation} type="search" placeholder="To Location" aria-label="Search" />
+                        <button className="btn btn-outline-success" type="submit">Search</button>
                     </form>
                 </div>
             </nav>

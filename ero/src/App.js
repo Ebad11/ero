@@ -13,8 +13,8 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [chargingPoints, setChargingPoints] = useState([]);
   const [routeChargingPoints, setRouteChargingPoints] = useState(null);
-  const [fromLocation, setFromLocation] = useState({latitude:"", longitude:""});
-  const [toLocation, setToLocation] = useState({latitude:"", longitude:""});
+  const [fromLocation, setFromLocation] = useState(null);
+  const [toLocation, setToLocation] = useState(null);
   const [routes, setRoutes] = useState(null);
 
   // Custom icon for charging points
@@ -28,7 +28,7 @@ function App() {
    // Custom icon user icon
    const userIcon = new L.Icon({
     iconUrl: locIcon, // You can replace this with your custom charging point icon
-    iconSize: [32, 32],
+    iconSize: [42, 42],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
   });
