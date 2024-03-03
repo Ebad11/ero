@@ -12,6 +12,7 @@ function App() {
   const [navState, setNavState] = useState("Charging Points near you");
   const [loading, setLoading] = useState(true);
   const [chargingPoints, setChargingPoints] = useState([]);
+  const [routeChargingPoints, setRouteChargingPoints] = useState(null);
   const [fromLocation, setFromLocation] = useState({latitude:"", longitude:""});
   const [toLocation, setToLocation] = useState({latitude:"", longitude:""});
   const [routes, setRoutes] = useState(null);
@@ -74,7 +75,7 @@ function App() {
 
   return (
     <>
-    <Navbar routes={routes} setRoutes={setRoutes} fromLocation={fromLocation} setFromLocation={setFromLocation} setToLocation={setToLocation}  toLocation={toLocation}/>
+    <Navbar routeChargingPoints={routeChargingPoints}  setRouteChargingPoints={setRouteChargingPoints} routes={routes} setRoutes={setRoutes} fromLocation={fromLocation} setFromLocation={setFromLocation} setToLocation={setToLocation}  toLocation={toLocation}/>
     <div style={{ height: "100vh", postion:"relative" }} >
       {loading ? (
         <div>Loading the closest Charging Points...</div>
@@ -95,6 +96,13 @@ function App() {
               <Popup>{point.AddressInfo.Title}</Popup>
             </Marker>
           ))}
+
+{routeChargingPoints && routeChargingPoints.map((point, index) => (
+    <Marker key={index} position={point} icon={chargingIcon}>
+        <Popup>{point[2]}</Popup>
+    </Marker>
+))}
+
 
           {routes && 
              routes.map((route, index) => (
